@@ -18,6 +18,21 @@
                 <b-button squared style="margin-left: 5px;" variant="primary" size="sm" v-b-modal.modal-pinjam>Pinjam Barang</b-button>
             <!-- akhir menu -->
 
+            
+            <!-- cari barang -->
+             <div class="row">
+                <div class="col-md-8">
+                    <br>
+                    <div class="input-group mb-3">
+                        <input type="text" v-model="cari" class="form-control input-keyword" placeholder="Cari Barang..." aria-label="Recipient's username" aria-describedby="basic-addon2">
+                        <div class="input-group-append">
+                        <button class="btn btn-outline-primary search-button" @click="cariBarang" type="button">Cari</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- akhri cari barang -->
+
 
             <!-- barang -->
             <div class="row barang">
@@ -110,6 +125,7 @@ export default {
     name: 'AdminMainPage',
     data: function (){
         return{
+            cari: '',
             datas: [{id: 1, gambar: '1.jpg', nama: 'hdmi', kode: 'A1', peminjam: 'Dandi', tenggat: 'Senin, 24 Januari 2020'},
             {id: 2, gambar: '2.jpg', nama: 'Proyektor', kode: 'A2', peminjam: 'Dandi', tenggat: 'Senin, 24 Januari 2020'},
             {id: 3, gambar: '3.jpeg', nama: 'Kamera 1', kode: 'A3', peminjam: 'Indra', tenggat: 'Senin, 24 Januari 2020'},
@@ -133,12 +149,18 @@ export default {
         }
     },
     methods: {
+        cariBarang(){
+            let params = new URLSearchParams;
+            params.append('cari', this.cari);
+
+            axios.get('http://127.0.0.1:8000/api/barang?cari=' + this.cari ).then(response => this.barang = response.data)
+        },
         getImage (img) {
             return img ? require(`../assets/img/${img}`) : ''
         },
-        getBarang(){
-            axios.get('http://127.0.0.1:8000/api/barang').then(response => this.barang = response.data);
-        },
+        // getBarang(){
+        //     axios.get('http://127.0.0.1:8000/api/barang', {'cari': this.cari}).then(response => this.barang = response.data);
+        // },
         detailBarang(id){
             const index = this.datas.findIndex(data => data.id == id);
             const detailBarang = this.datas[index];
@@ -180,7 +202,7 @@ export default {
         
     },
     mounted(){
-        this.getBarang();
+        // this.getBarang();
     }
    
 }
