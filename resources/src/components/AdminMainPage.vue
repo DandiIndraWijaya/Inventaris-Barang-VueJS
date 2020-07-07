@@ -21,11 +21,11 @@
 
             <!-- barang -->
             <div class="row barang">
-                <div class="col-md-3 my-3" v-for="(row, index) in datas" :key="index">
+                <div class="col-md-3 my-3" v-for="(row, index) in barang" :key="index">
                     <div class="card">
-                        <img :src="getImage(row.gambar)">
+                        <img :src="'http://127.0.0.1:8000/' + row.gambar">
                                 <ul class="list-group">
-                                    <li class="list-group-item"><h5>{{ row.nama }}</h5></li>
+                                    <li class="list-group-item"><h5>{{ row.nama_barang }}</h5></li>
                                     <li class="list-group-item list">Kode : {{ row.kode }}</li>
                                     <li class="list-group-item list">Dipinjam oleh : {{ row.peminjam }}</li>
                                     <li class="list-group-item list">Tenggat : {{ row.tenggat }}</li>
@@ -128,6 +128,7 @@ export default {
             kodeBarang: '',
             deskripsi: '',
             menyimpan: '',
+            barang: null
 
         }
     },
@@ -136,7 +137,7 @@ export default {
             return img ? require(`../assets/img/${img}`) : ''
         },
         getBarang(){
-            axios.get('http://127.0.0.1:8000/api/barang').then(response => this.notes = response.data.reverse());
+            axios.get('http://127.0.0.1:8000/api/barang').then(response => this.barang = response.data);
         },
         detailBarang(id){
             const index = this.datas.findIndex(data => data.id == id);
@@ -172,8 +173,8 @@ export default {
              'gambar': this.inputGambar}, 
               {onUploadProgress: uploadEvent => {
                   this.menyimpan = 'Menyimpan: ' + Math.round(uploadEvent.loaded / uploadEvent.total * 100 + '%');
-              }}).then(response => {
-                console.log(response);
+              }}).then(() => {
+                this.getBarang();
             })
         }
         
