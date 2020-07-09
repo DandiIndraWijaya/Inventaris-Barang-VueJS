@@ -54,7 +54,7 @@
 
 
             <!-- Awal Modal input barang -->
-            <b-modal id="modal-input" size="lg" class="modal-content" title="Input Barang" >
+            <b-modal id="modal-input" size="lg" class="modal-content" title="Input Barang" ok-only>
                 <div class="form-group">
                     <label for="gambar">Gambar</label>
                     <input type="file" id="gambar" class="form-control" @change="onFileSelected">
@@ -64,27 +64,33 @@
                     <input type="text" id="kode" class="form-control" v-model="kodeBarang">
                     <label for="deskripsi">Deskripsi :</label>
                     <input type="text" id="deskripsi" class="form-control" v-model="deskripsi">
-                    <div>
-                        <p v-if="menyimpan != ''">{{ menyimpan }}</p>
-                    </div>
+                    
+                    <br>
                     <b-button @click="saveBarang">Simpan</b-button>
                 </div>
+                 <template v-slot:modal-footer>
+                    <div class="w-100">
+                    <div class="float-right">
+                        <p v-if="menyimpan != ''">{{ menyimpan }}</p>
+                    </div>
+                    </div>
+                </template>
             </b-modal>
             <!-- Akhir Modal input barang-->
 
 
             <!-- Awal modal detail barang -->
-            <b-modal id="modal-detail" size="lg" class="modal-content" title="">
+            <b-modal id="modal-detail" size="lg" v-if="indexBarang != null" class="modal-content" title="">
                 <div class="row">
                     <div class="col-md-4 offset-md-1">
-                        <img :src="getImage(gambar)" class="img-fluid" alt="Gambar Barang" >
+                        <img :src="'http://127.0.0.1:8000/' + barang[indexBarang].gambar" class="img-fluid" alt="Gambar Barang" >
                     </div>
                         <div class="col-md">
                         <ul class="list-group">
-                            <li class="list-group-item"><h5>{{ datas[indexBarang].nama }}</h5></li>
-                            <li class="list-group-item"><strong>Kode : </strong>{{ datas[indexBarang].kode }}</li>
-                            <li class="list-group-item"><strong>Peminjam : </strong>{{ datas[indexBarang].peminjam }}</li>
-                            <li class="list-group-item"><strong>Tenggat : </strong>{{ datas[indexBarang].tenggat }}</li>
+                            <li class="list-group-item"><h5>{{ barang[indexBarang].nama }}</h5></li>
+                            <li class="list-group-item"><strong>Kode : </strong>{{ barang[indexBarang].kode }}</li>
+                            <li class="list-group-item"><strong>Peminjam : </strong>{{ barang[indexBarang].peminjam }}</li>
+                            <li class="list-group-item"><strong>Tenggat : </strong>{{ barang[indexBarang].tenggat }}</li>
                         </ul>  
                     </div>
                 </div>
@@ -94,7 +100,7 @@
                         Klik tombol akhiri jika peminjam sudah mengembalikan barang
                     </div>
                     <div class="col-md-4">
-                        <b-button variant="danger" @click="resetPeminjam(idBarang)">Akhiri</b-button>
+                        <b-button variant="danger" @click="resetPeminjam(barang[indexBarang].kode, barang[indexBarang].tenggat)">Akhiri</b-button>
                     </div>
                 </div>
             </b-modal>
@@ -126,15 +132,9 @@ export default {
     data: function (){
         return{
             cari: '',
-            datas: [{id: 1, gambar: '1.jpg', nama: 'hdmi', kode: 'A1', peminjam: 'Dandi', tenggat: 'Senin, 24 Januari 2020'},
-            {id: 2, gambar: '2.jpg', nama: 'Proyektor', kode: 'A2', peminjam: 'Dandi', tenggat: 'Senin, 24 Januari 2020'},
-            {id: 3, gambar: '3.jpeg', nama: 'Kamera 1', kode: 'A3', peminjam: 'Indra', tenggat: 'Senin, 24 Januari 2020'},
-            {id: 4, gambar: '4.jpeg', nama: 'Kamera 2', kode: 'A4', peminjam: 'Nina', tenggat: 'Senin, 24 Januari 2020'},
-            {id: 5, gambar: '5.jpeg', nama: 'Arduino', kode: 'A5', peminjam: 'Wijaya', tenggat: 'Senin, 24 Januari 2020'} ],
             barangDetail:``,
-            gambar: '',
             idBarang: 0,
-            indexBarang: 0,
+            indexBarang: null,
             id: 0,
             kode: '',
             peminjam: '',
@@ -144,15 +144,12 @@ export default {
             kodeBarang: '',
             deskripsi: '',
             menyimpan: '',
-            barang: null
+            barang: null,
 
         }
     },
     methods: {
         cariBarang(){
-            let params = new URLSearchParams;
-            params.append('cari', this.cari);
-
             axios.get('http://127.0.0.1:8000/api/barang?cari=' + this.cari ).then(response => this.barang = response.data)
         },
         getImage (img) {
@@ -162,21 +159,20 @@ export default {
         //     axios.get('http://127.0.0.1:8000/api/barang', {'cari': this.cari}).then(response => this.barang = response.data);
         // },
         detailBarang(id){
-            const index = this.datas.findIndex(data => data.id == id);
-            const detailBarang = this.datas[index];
+            const index = this.barang.findIndex(data => data.id == id);
             this.indexBarang = index;
             this.idBarang = id;
-            this.gambar = detailBarang.gambar;
         },
-        resetPeminjam(id){
-            const indexBarang = this.datas.findIndex(data => data.id == id);
-            this.datas[indexBarang].peminjam = '-';
-            this.datas[indexBarang].tenggat = '-';
+        resetPeminjam(kode, tenggat){
+            axios.put('http://127.0.0.1:8000/api/barang', {'kode': kode, 'tenggat': tenggat}).then( () => {
+                this.barang[this.indexBarang].peminjam = '';
+                this.barang[this.indexBarang].tenggat = '';
+            });
         },
         savePinjamBarang(){
-            const indexBarang = this.datas.findIndex(data => data.kode == this.kode);
-            this.datas[indexBarang].peminjam = this.peminjam;
-            this.datas[indexBarang].tenggat = this.tenggat;
+            // const indexBarang = this.datas.findIndex(data => data.kode == this.kode);
+            // this.datas[indexBarang].peminjam = this.peminjam;
+            // this.datas[indexBarang].tenggat = this.tenggat;
         },
         onFileSelected(event){
             let fileReader = new FileReader();
@@ -188,16 +184,20 @@ export default {
             }
         },
         saveBarang(){
+            
              axios.post('http://127.0.0.1:8000/api/barang', 
              {'nama_barang' : this.namaBarang,
              'kode': this.kodeBarang,
              'deskripsi' : this.deskripsi,
              'gambar': this.inputGambar}, 
-              {onUploadProgress: uploadEvent => {
-                  this.menyimpan = 'Menyimpan: ' + Math.round(uploadEvent.loaded / uploadEvent.total * 100 + '%');
-              }}).then(() => {
-                this.getBarang();
-            })
+              {onUploadProgress: e =>  this.menyimpan = 'Menyimpan: ' + Math.round(e.loaded / e.total * 100 ) + '%'
+              }).then(response => {
+                setTimeout(()=>{
+                    this.menyimpan = false
+                }, 3000);
+                console.log(response);
+            });
+
         }
         
     },
