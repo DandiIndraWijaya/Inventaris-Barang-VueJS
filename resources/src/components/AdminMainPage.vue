@@ -16,6 +16,7 @@
             <!-- menu -->
                 <b-button squared variant="primary" size="sm" v-b-modal.modal-input>Input Barang</b-button>
                 <b-button squared style="margin-left: 5px;" variant="primary" size="sm" v-b-modal.modal-pinjam>Pinjam Barang</b-button>
+                <b-button squared style="margin-left: 5px;" variant="primary" size="sm" v-b-modal.modal-riwayat>Riwayat Peminjaman</b-button>
             <!-- akhir menu -->
 
             
@@ -33,6 +34,13 @@
             </div>
             <!-- akhri cari barang -->
 
+            <div v-if="loading != null">
+                <center>
+                    <svg>
+                        <circle cx="70" cy="70" r="70"></circle>
+                    </svg>
+                </center>
+            </div>
 
             <!-- barang -->
             <div class="row barang">
@@ -42,8 +50,11 @@
                                 <ul class="list-group">
                                     <li class="list-group-item"><h5>{{ row.nama_barang }}</h5></li>
                                     <li class="list-group-item list">Kode : {{ row.kode }}</li>
-                                    <li class="list-group-item list">Dipinjam oleh : {{ row.peminjam }}</li>
-                                    <li class="list-group-item list">Tenggat : {{ row.tenggat }}</li>
+                                    <div v-if="row.peminjam != null">
+                                        <li class="list-group-item list">Dipinjam oleh : {{ row.peminjam }}</li>
+                                        <li class="list-group-item list">Tenggat : {{ row.tenggat }}</li>
+                                        <li class="list-group-item list" style="color: red" v-if="row.ket != '-'"> {{ row.ket }}</li>
+                                    </div>
                                 </ul>
                         <b-button class="modal-detail-button" @click="detailBarang(row.id)" v-b-modal.modal-detail variant="success" size="sm">Detail</b-button>  
                     </div>
@@ -87,15 +98,21 @@
                     </div>
                         <div class="col-md">
                         <ul class="list-group">
-                            <li class="list-group-item"><h5>{{ barang[indexBarang].nama }}</h5></li>
+                            <li class="list-group-item"><h5>{{ barang[indexBarang].nama_barang }}</h5></li>
                             <li class="list-group-item"><strong>Kode : </strong>{{ barang[indexBarang].kode }}</li>
-                            <li class="list-group-item"><strong>Peminjam : </strong>{{ barang[indexBarang].peminjam }}</li>
-                            <li class="list-group-item"><strong>Tenggat : </strong>{{ barang[indexBarang].tenggat }}</li>
+                            <div v-if="barang[indexBarang].peminjam != null">
+                                <li class="list-group-item"><strong>Peminjam : </strong>{{ barang[indexBarang].peminjam }}</li>
+                                <li class="list-group-item"><strong>Keperluan : </strong>{{ barang[indexBarang].keperluan }}</li>
+                                <li class="list-group-item"><strong>Kontak Peminjam: </strong>{{ barang[indexBarang].kontak }}</li>
+                                <li class="list-group-item"><strong>Tenggat : </strong>{{ barang[indexBarang].tenggat }}</li>
+                                <li class="list-group-item" style="color: red" v-if="barang[indexBarang].ket != '-'">{{ barang[indexBarang].ket }}</li>
+                            </div>
+                           
                         </ul>  
                     </div>
                 </div>
                 <br>
-                 <div class="row">
+                 <div class="row" v-if="barang[indexBarang].peminjam != null">
                     <div class="col-md-4 offset-md-1">
                         Klik tombol akhiri jika peminjam sudah mengembalikan barang
                     </div>
@@ -113,12 +130,83 @@
                     <input type="text" id="kode" class="form-control" v-model="kode">
                     <label for="peminjam">Peminjam : </label>
                     <input type="text" id="peminjam" class="form-control" v-model="peminjam">
+                    <label for="kontak">Kontak Peminjam : </label>
+                    <input type="text" id="kontak" class="form-control" v-model="kontak">
+                    <label for="alamat">Alamat Peminjam : </label>
+                    <input type="text" id="alamat" class="form-control" v-model="alamatPeminjam">
+                     <label for="keperluan">Keperluan : </label>
+                    <input type="text" id="keperluan" class="form-control" v-model="keperluan">
                     <label for="tenggat">Dipinjam Sampai :</label>
-                    <input type="date" id="tenggat" class="form-control" v-model="tenggat">
+                    <input type="datetime-local" id="tenggat" class="form-control" v-model="tenggat">
                     <b-button @click="savePinjamBarang">Simpan</b-button>
                 </div>
+                <template v-slot:modal-footer>
+                    <div class="w-100">
+                    <div class="float-right">
+                        <p v-if="hasilRequestPinjam != ''">{{ hasilRequestPinjam }}</p>
+                    </div>
+                    </div>
+                </template>
             </b-modal>
             <!-- Akhir modal pinjam barang -->
+
+            <!-- modal riwayat peminjaman -->
+            <b-modal id="modal-riwayat" size="xl" scrollable title="Scrollable Content">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <input type="date" v-model="riwayatTanggal">
+                            <b-button squared style="margin-left: 5px;" @click="showRiwayat('tanggal')" variant="primary" size="sm" >Tampilkan</b-button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <input type="text" v-model="riwayatKode" placeholder="Ketik kode barang">
+                            <b-button squared style="margin-left: 5px;" @click="showRiwayat('kode')" variant="primary" size="sm" >Tampilkan</b-button>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="loadingRiwayat != null">
+                    <center>
+                        <svg>
+                            <circle cx="70" cy="70" r="70"></circle>
+                        </svg>
+                    </center>
+                </div>
+                <div class="row">
+                    <table class="table" v-if="riwayat != null">
+                        <thead>
+                            <tr>
+                                <th>Nama Barang</th>
+                                <th>Kode</th>
+                                <th>Peminjam</th>
+                                <th>Alamat Peminjam</th>
+                                <th>Keperluan</th>
+                                <th>Kontak</th>
+                                <th>Waktu Peminjaman</th>
+                                <th>Waktu Dikembalikan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(row, index) in riwayat" :key="index">
+                                <td>{{ row.nama_barang }}</td>
+                                <td>{{ row.kode_barang }}</td>
+                                <td>{{ row.peminjam }}</td>
+                                <td>{{ row.alamat_peminjam }}</td>
+                                <td>{{ row.keperluan }}</td>
+                                <td>{{ row.kontak }}</td>
+                                <td>{{ row.dipinjam }}</td>
+                                <td>{{ row.dikembalikan }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                 <template v-slot:modal-footer>
+                    <div class="w-100">
+                    </div>
+                </template>
+            </b-modal>
+            <!-- Akhir modal riwayat peminjaman -->
         </div>
     </div>
 </template>
@@ -138,6 +226,9 @@ export default {
             id: 0,
             kode: '',
             peminjam: '',
+            kontak: '',
+            keperluan: '',
+            alamatPeminjam: '',
             tenggat: '',
             inputGambar: '',
             namaBarang: '',
@@ -145,19 +236,28 @@ export default {
             deskripsi: '',
             menyimpan: '',
             barang: null,
+            hasilRequestPinjam: '',
+            loading: null,
+            loadingRiwayat: null,
+            riwayatKode: null,
+            riwayatTanggal: null,
+            riwayat: null
 
         }
     },
     methods: {
         cariBarang(){
-            axios.get('http://127.0.0.1:8000/api/barang?cari=' + this.cari ).then(response => this.barang = response.data)
+            this.barang = null;
+            this.loading = 1;
+            axios.get('http://127.0.0.1:8000/api/barang?cari=' + this.cari ).then(response => 
+            {
+                this.loading = null;
+                this.barang = response.data;
+            });
         },
         getImage (img) {
             return img ? require(`../assets/img/${img}`) : ''
         },
-        // getBarang(){
-        //     axios.get('http://127.0.0.1:8000/api/barang', {'cari': this.cari}).then(response => this.barang = response.data);
-        // },
         detailBarang(id){
             const index = this.barang.findIndex(data => data.id == id);
             this.indexBarang = index;
@@ -170,9 +270,15 @@ export default {
             });
         },
         savePinjamBarang(){
-            // const indexBarang = this.datas.findIndex(data => data.kode == this.kode);
-            // this.datas[indexBarang].peminjam = this.peminjam;
-            // this.datas[indexBarang].tenggat = this.tenggat;
+            axios.post('http://127.0.0.1:8000/api/barang/pinjam',
+            {
+                'kode': this.kode,
+                'peminjam': this.peminjam,
+                'kontak': this.kontak,
+                'tenggat': this.tenggat,
+                'alamat_peminjam': this.alamatPeminjam,
+                'keperluan': this.keperluan
+            }).then(response => this.hasilRequestPinjam = response.data);
         },
         onFileSelected(event){
             let fileReader = new FileReader();
@@ -197,13 +303,23 @@ export default {
                 }, 3000);
                 console.log(response);
             });
-
+        },
+        showRiwayat(cek){
+            this.riwayat = null;
+            this.loadingRiwayat = 1;
+            if(cek == 'tanggal'){
+                axios.get('http://127.0.0.1:8000/api/barang/riwayat?data=' + this.riwayatTanggal + '&i=' + cek).then(response => {
+                    this.riwayat = response.data;
+                    this.loadingRiwayat = null;
+                });
+            }else{
+                axios.get('http://127.0.0.1:8000/api/barang/riwayat?data=' + this.riwayatKode + '&i=' + cek).then(response => {
+                    this.riwayat = response.data;
+                    this.loadingRiwayat = null;
+                });
+            }
         }
-        
     },
-    mounted(){
-        // this.getBarang();
-    }
    
 }
 </script>
@@ -235,7 +351,7 @@ button{
 
 .barang img{
     width: 100%;
-    height: 150px;
+    height: 200px;
     border: solid gainsboro 2px;
 }
 
@@ -257,5 +373,38 @@ button{
     background-color: red;
 }
 
+svg{
+    position: relative;
+    width: 150px;
+    height: 150px;
+    animation: rotate 2s linear infinite;
+}
+
+svg circle{
+    width: 20%;
+    height: 20%;
+    fill: none;
+    stroke-width: 10;
+    stroke: skyblue;
+    stroke-linecap: round;
+    transform: translate(5px, 5px);
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+    animation: animate 2s linear infinite;
+}
+@keyframes animate{
+    0%, 100%
+    {
+        stroke-dashoffset: 440;
+    }
+    50%
+    {
+        stroke-dashoffset: 0;
+    }
+    50.1%
+    {
+        stroke-dashoffset: 880;
+    }
+}
 
 </style>
