@@ -1,0 +1,148 @@
+<template>
+    <div class="login-page">
+        <div id="card">
+            <div id="card-content">
+                <div id="card-title">
+                    <h2>LOGIN</h2>
+                    <div class="underline-title"></div>
+                </div>
+
+                <label for="user-email" style="padding-top:13px">Email : </label>
+                    <input
+                    id="user-email"
+                    class="form-content"
+                    type="email"
+                    name="email"
+                    autocomplete="on"
+                    required v-model="email" />
+                    <div class="form-border"></div>
+                    <label for="user-password" style="padding-top:22px">&nbsp;Password : </label>
+                    <input
+                    id="user-password"
+                    class="form-content"
+                    type="password"
+                    name="password"
+                    required v-model="password" />
+                    <div class="form-border"></div>
+                    
+                    <center>
+                        <button id="submit-btn" @click="login">LOGIN</button>
+                        <!-- <input id="submit-btn" type="submit" @onclick="login" name="submit" value="LOGIN" /> -->
+                    </center>
+                    
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+
+// import axios from 'axios';
+
+    export default{
+        name: 'login-page',
+        data() {
+            return {
+                email: '',
+                password: ''
+            }
+        },
+        methods: {
+            login(){
+               this.$store.dispatch('retrieveToken', {
+                email: this.email,
+                password: this.password
+               }).then(() => {
+                this.$router.push({ path: '/inventaris' })
+               })
+            }
+        },
+    }
+</script>
+
+<style>
+#card {
+        background: #fbfbfb;
+        border-radius: 8px;
+        box-shadow: 1px 2px 8px rgba(0, 0, 0, 0.65);
+        height: 320px;
+        margin: 6rem auto 8.1rem auto;
+        width: 400px;
+}
+
+#card-content {
+      padding: 12px 44px;
+}
+#card-title {
+      font-family: "Raleway Thin", sans-serif;
+      letter-spacing: 4px;
+      padding-bottom: 23px;
+      padding-top: 13px;
+      text-align: center;
+}
+.underline-title {
+    background: #5cb85c;
+      /* background: -webkit-linear-gradient(right, #a6f77b, #2ec06f); */
+      height: 2px;
+      margin: -1.1rem auto 0 auto;
+      width: 89px;
+}
+
+a {
+    text-decoration: none;
+}
+label {
+    font-family: "Raleway", sans-serif;
+    font-size: 11pt;
+}
+#forgot-pass {
+    color: #2dbd6e;
+    font-family: "Raleway", sans-serif;
+    font-size: 10pt;
+    margin-top: 3px;
+    text-align: right;
+}
+.form {
+    align-items: left;
+    display: flex;
+    flex-direction: column;
+}
+.form-border {
+    background: #5cb85c;
+    /* background: -webkit-linear-gradient(right, #a6f77b, #2ec06f); */
+    height: 1px;
+    width: 100%;
+}
+.form-content {
+    background: #fbfbfb;
+    border: none;
+    outline: none;
+    padding-top: 14px;
+}
+
+#signup {
+    color: #2dbd6e;
+    font-family: "Raleway", sans-serif;
+    font-size: 10pt;
+    margin-top: 16px;
+    text-align: center;
+}
+#submit-btn {
+    background: #5cb85c;
+    /* background: -webkit-linear-gradient(right, #a6f77b, #2dbd6e); */
+    border: none;
+    border-radius: 21px;
+    box-shadow: 0px 1px 8px #24c64f;
+    cursor: pointer;
+    color: white;
+    font-family: "Raleway SemiBold", sans-serif;
+    height: 42.3px;
+    margin: 0 auto;
+    margin-top: 50px;
+    transition: 0.25s;
+    width: 153px;
+}
+#submit-btn:hover {
+    box-shadow: 0px 1px 18px #24c64f;
+}
+</style>

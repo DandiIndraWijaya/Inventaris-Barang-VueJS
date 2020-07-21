@@ -1,5 +1,35 @@
 <template>
     <div class="admin-main-page">
+            <div class="sidenav">
+              <div class="logo">
+                <h3>Logo</h3>
+              </div>
+              <div class="menu">
+                
+                  <div class="menu-button">
+                      <p class="h5 mb-2"> 
+                        <b-icon icon="archive" style="width: 20px; height: 20px;"></b-icon><font style="font-size: 14px; font-weight: bold">Semua Barang</font>
+                      </p>
+                  </div>
+                
+                <router-link to="/inventaris" style="margin: 0; text-decoration: none">
+                  <div class="menu-button" id="cari">
+                      <p class="h5 mb-2"> 
+                        <b-icon icon="search" style="width: 20px; height: 20px;"></b-icon><font style="font-size: 14px; font-weight: bold">Cari Barang</font>
+                      </p>
+                  </div>
+                </router-link>
+
+                <router-link to="/inventaris/riwayat" style="margin: 0; text-decoration: none">
+                  <div class="menu-button riwayat" :id="riwayat">
+                      <p class="h5 mb-2"> 
+                        <b-icon icon="clock-history" style="width: 20px; height: 20px;"></b-icon><font style="font-size: 14px; font-weight: bold">Riwayat Peminjaman</font>
+                      </p>
+                  </div>
+                </router-link>
+
+              </div>
+            </div>
         <div class="container">
 
             <!-- title -->
@@ -326,6 +356,12 @@ export default {
 
 
 <style>
+
+
+.admin-main-page{
+    margin-left: 160px;
+}
+
 .title{
     margin-top: 80px;
     color: grey;
@@ -392,6 +428,13 @@ svg circle{
     stroke-dashoffset: 220;
     animation: animate 2s linear infinite;
 }
+
+@media screen and (max-width: 950px){
+    .admin-main-page{
+        margin-left: 50px;
+    }
+}
+
 @keyframes animate{
     0%, 100%
     {
